@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>補繳金額精算器 (V10 完整版)</title>
+    <title>資產壓力測試戰情室 (V11 旗艦版)</title>
     <style>
         :root {
             --bg-color: #f0f3f5;
@@ -13,16 +13,29 @@
             --success: #00b894;
             --warning: #fdcb6e;
             --danger: #d63031;
-            --primary: #6c5ce7;
+            --primary: #6c5ce7; /* 積極型主色 */
             --border-radius: 12px;
         }
         body { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; }
 
+        /* --- 頂部總覽儀表板 (新功能) --- */
+        .summary-dashboard {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
+            background: #fff; padding: 20px; border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary);
+        }
+        .summary-item { text-align: center; border-right: 1px solid #eee; }
+        .summary-item:last-child { border-right: none; }
+        .summary-label { color: var(--text-light); font-size: 0.9em; margin-bottom: 5px; }
+        .summary-val { font-size: 1.5em; font-weight: bold; font-family: Consolas, monospace; color: var(--text-main); }
+        .summary-val.danger { color: var(--danger); }
+        .summary-val.success { color: var(--success); }
+
         /* --- 控制面板 --- */
         .dashboard-panel {
             background: var(--card-bg); padding: 30px; border-radius: var(--border-radius);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 25px; border-top: 5px solid var(--primary);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 25px;
         }
 
         .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
@@ -73,7 +86,6 @@
         .duration-badge { font-size: 0.8em; color: var(--primary); background: #e3f2fd; padding: 2px 6px; border-radius: 4px; margin-top: 5px; width: fit-content;}
         .status-tag { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: bold; color: #fff; height: fit-content;}
         
-        /* 輸入框樣式 */
         .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.9em; }
         .input-wrapper { display: flex; align-items: center; }
         .editable-input {
@@ -89,12 +101,11 @@
         .bar-fill { height: 100%; transition: width 0.3s ease, background-color 0.3s ease; }
         .bar-info { display: flex; justify-content: space-between; font-size: 0.8em; margin-top: 4px; color: var(--text-light); }
 
-        /* --- 補繳警示框 --- */
+        /* 補繳警示框 */
         .alert-box {
             margin-top: 15px; padding: 10px; background: #ffe6e6; 
             border: 1px solid #ff4d4f; border-radius: 6px;
-            color: #c0392b; font-size: 0.9em; display: none; /* 預設隱藏 */
-            animation: fadeIn 0.5s;
+            color: #c0392b; font-size: 0.9em; display: none; animation: fadeIn 0.5s;
         }
         .alert-amount { font-weight: bold; font-size: 1.2em; display: block; margin-top: 2px; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -103,35 +114,53 @@
         .info-section { margin-top: 40px; background: #fff; border-radius: var(--border-radius); box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
         .tabs { display: flex; background: #f8f9fa; border-bottom: 1px solid #eee; overflow-x: auto;}
         .tab-btn { padding: 15px 25px; cursor: pointer; border: none; background: transparent; font-weight: bold; color: var(--text-light); white-space: nowrap; }
+        .tab-btn:hover { background: #e9ecef; }
         .tab-btn.active { color: var(--primary); background: #fff; border-bottom: 3px solid var(--primary); }
         .tab-content { padding: 30px; display: none; }
         .tab-content.active { display: block; }
+        
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .info-block h3 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: var(--primary); margin-top: 0; }
         .info-list li { margin-bottom: 10px; }
-        
-        @media (max-width: 768px) { .info-grid { grid-template-columns: 1fr; } }
+        .highlight { background: #fff3cd; padding: 2px 5px; border-radius: 3px; }
 
-        /* 額外強調區塊 */
-        .focus-box {
-            border-left: 4px solid var(--primary);
-            background: #f5f7ff;
-            padding: 15px 18px;
-            border-radius: 8px;
-            font-size: 0.95em;
-            margin-top: 20px;
+        @media (max-width: 768px) { 
+            .info-grid { grid-template-columns: 1fr; } 
+            .summary-dashboard { grid-template-columns: 1fr 1fr; }
+            .summary-item { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         }
-        .focus-box strong { color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
+    
+    <!-- 1. 新增：總覽儀表板 -->
+    <div class="summary-dashboard">
+        <div class="summary-item">
+            <div class="summary-label">總資產 (模擬)</div>
+            <div class="summary-val" id="total-assets">0 萬</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">總借款</div>
+            <div class="summary-val" id="total-loan">0 萬</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">淨值</div>
+            <div class="summary-val success" id="total-net">0 萬</div>
+        </div>
+        <div class="summary-item" style="background:#fff1f0;">
+            <div class="summary-label" style="color:#d63031;">總需補繳現金</div>
+            <div class="summary-val danger" id="total-cash-needed">0 萬</div>
+        </div>
+    </div>
+
+    <!-- 2. 控制區 -->
     <div class="dashboard-panel">
         <div class="header-row">
             <div>
-                <h2>🚨 補繳金額精算器 (V10)</h2>
-                <p>針對積極型保單 & ETF 質押，自動計算解除追繳所需現金</p>
+                <h2>🎛️ 資產壓力測試戰情室</h2>
+                <p>配置：積極型保單 (安聯/施羅德) + ETF 質押組合</p>
             </div>
             <div class="market-metrics">
                 <div class="metric-label">模擬大盤跌幅</div>
@@ -141,7 +170,6 @@
 
         <div class="slider-wrapper">
             <input type="range" id="crashSlider" min="0" max="70" value="0" step="1" oninput="calculateAll()">
-            
             <div class="markers">
                 <div class="marker-item" style="left: 0%">0%</div>
                 <div class="marker-item" style="left: 14%"><span class="marker-year">修正</span>-10%</div>
@@ -153,193 +181,87 @@
 
         <div id="scenarioBox" class="scenario-box">
             <strong id="scenarioTitle">🟢 狀態：平穩</strong><br>
-            <span id="scenarioDesc">拉動滑桿模擬股災。若出現警示紅框，代表需要準備現金補繳。</span>
+            <span id="scenarioDesc">請拉動滑桿模擬股災。上方儀表板會即時計算您「總共需要多少錢」來救火。</span>
         </div>
     </div>
 
+    <!-- 3. 卡片區 -->
     <div class="grid" id="cardGrid"></div>
 
+    <!-- 4. 詳細說明區 (已加回) -->
     <div class="info-section">
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('tab1', this)">💰 補繳計算邏輯</button>
-            <button class="tab-btn" onclick="switchTab('tab2', this)">🛡️ 股災歷史分析</button>
-            <button class="tab-btn" onclick="switchTab('tab3', this)">📊 你的資產結構解讀</button>
+            <button class="tab-btn active" onclick="switchTab('tab1')">⚠️ 積極型風險分析</button>
+            <button class="tab-btn" onclick="switchTab('tab2')">🛡️ 安全指標定義</button>
+            <button class="tab-btn" onclick="switchTab('tab3')">🚨 應急 SOP</button>
         </div>
 
+        <!-- Tab 1 -->
         <div id="tab1" class="tab-content active">
             <div class="info-grid">
                 <div class="info-block">
+                    <h3>為什麼積極型保單風險較高？</h3>
+                    <p>您的保單成分含有 <span class="highlight">安聯收益成長</span> 與 <span class="highlight">施羅德環球</span>：</p>
+                    <ul class="info-list">
+                        <li><strong>Beta 值修正 (0.75)：</strong> 這類基金持有 1/3 高收益債與 1/3 可轉債，與股市連動性高。大盤跌 10%，保單約跌 7.5%。</li>
+                        <li><strong>歷史教訓：</strong> 在 2000 年與 2008 年，這類資產的跌幅遠高於傳統公債。請務必滑到 -67% 查看紅燈情況。</li>
+                    </ul>
+                </div>
+                <div class="info-block">
+                    <h3>您的護城河</h3>
+                    <ul class="info-list">
+                        <li><strong>ETF 組合 (5:4:1)：</strong> 含有 40% 投資等級債，這是您資產中最堅固的盾牌。</li>
+                        <li><strong>持有時間：</strong> 卡片上顯示的持有時間 (如 1年2個月) 累積了配息，降低了您的帳面成本。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2 -->
+        <div id="tab2" class="tab-content">
+            <div class="info-grid">
+                <div class="info-block">
                     <h3>保單補繳規則 (LTV)</h3>
-                    <p>當借款比 (LTV) 超過 80% 時，銀行會要求補繳本金，使 LTV 降回 80% 以下。</p>
-                    <p><strong>計算公式：</strong></p>
-                    <div style="background:#f9f9f9; padding:10px; border-radius:5px; font-family:monospace;">
-                        補繳金額 = 目前借款 - (目前市值 × 80%)
-                    </div>
-                    <p style="font-size:0.9em; color:#666">此計算器會顯示讓您回到「安全綠燈」所需的最低金額。</p>
+                    <p>當借款比 (LTV) > 80% 時需補繳。</p>
+                    <p><strong>公式：</strong> <span style="font-family:monospace">補繳 = 借款 - (市值 × 80%)</span></p>
+                    <p>本系統會自動計算需償還多少本金才能回到綠燈。</p>
                 </div>
                 <div class="info-block">
                     <h3>ETF 補繳規則 (維持率)</h3>
-                    <p>當維持率低於 130% 時，券商會發出追繳令。通常 SOP 要求補足至 <strong>166%</strong> 才能解除追繳紀錄。</p>
-                    <p><strong>計算公式：</strong></p>
-                    <div style="background:#f9f9f9; padding:10px; border-radius:5px; font-family:monospace;">
-                        補繳金額 = 目前借款 - (目前市值 ÷ 166%)
-                    </div>
-                    <p style="font-size:0.9em; color:#666">我們採用最嚴格標準 (回補至 166%) 計算，確保您絕對安全。</p>
+                    <p>維持率 < 130% 追繳。通常需補至 166% 解除。</p>
+                    <p><strong>公式：</strong> <span style="font-family:monospace">補繳 = 借款 - (市值 ÷ 166%)</span></p>
+                    <p>ETF 質押因槓桿低 (約 20%)，通常極難發生追繳。</p>
                 </div>
             </div>
         </div>
-        
-        <div id="tab2" class="tab-content">
-             <div class="info-block">
-                <h3>壓力測試重點 (2000年網路泡沫 -67%)</h3>
-                <p>請將滑桿拉到最右邊，您會看到：</p>
-                <ul class="info-list">
-                    <li>積極型保單可能出現紅色警示框，顯示需補繳數萬元至數十萬元不等。</li>
-                    <li>這是您需要預留的「極限週轉金」。若您手上的「保單 E (遠雄)」價值 + 現金存量 ≥ 紅框金額總和，代表即使重演 2000 年級別的股災，你仍可用這些資產補回安全線，而不用被強迫斷頭。</li>
-                    <li>若在 -30% ～ -40% 區間，多數卡片仍維持綠燈或少數黃燈，代表你的整體槓桿是「偏積極但可承受 1～2 次大型股災」的等級。</li>
-                </ul>
-                <p style="font-size:0.9em; color:#666">簡單來說：<br>這個 Tab 用來測試「最壞情況」，不是讓你預測市場，而是幫你確認：就算世界再次崩一次，你也不會被市場強迫清算。</p>
-            </div>
-        </div>
 
+        <!-- Tab 3 -->
         <div id="tab3" class="tab-content">
             <div class="info-block">
-                <h3>這六張卡片，其實就是你的真實資產縮小版</h3>
-                <p>本工具不是一般教學用範例，而是為了你的實際結構量身打造：</p>
-                <ul class="info-list">
-                    <li><strong>保單 A～D：</strong>四張以 <strong>收益成長 / 平衡型基金</strong> 為主的投資型保單，屬於<strong>積極型現金流資產</strong>，同時有配息、也承擔股債價格波動。</li>
-                    <li><strong>保單 E：</strong>偏向<strong>儲蓄 / 保守型</strong>保單，借款比與補繳線較高，主要功能是當作你極端情況下可以動用的「防禦資產」。</li>
-                    <li><strong>ETF 組合：</strong>台股高股息 + 投資級債為主，目前維持率很高（預設為健康的 400%+ 等級），做為額外可動用的槓桿工具與配息來源。</li>
-                </ul>
-                <p>程式中的每一筆數字（現值、借款、補繳線）都對應到你目前實際的大方向，只是用「萬」為單位精簡呈現，方便你做壓力測試。</p>
-            </div>
-
-            <div class="info-block">
-                <h3>這個壓力測試在回答三個問題</h3>
-                <ol class="info-list">
-                    <li><strong>問題一：再來一個 2020 / 2022 (-30%)，你會不會被追繳？</strong><br>
-                        將滑桿拉到 <strong>-30%</strong> 左右，觀察：<br>
-                        若大部分卡片仍為綠燈（或少數黃燈且補繳金額不大），代表你的整體槓桿在「中低～中」水準，可以承受一輪類似 2020 的股災，不會立即爆掉。
+                <h3>🚦 極端行情應變 SOP</h3>
+                <p>若上方儀表板的「總需補繳現金」出現數字：</p>
+                <ol>
+                    <li><strong>第一步：檢查「保單 E (遠雄)」的現值。</strong> 
+                        請看保單 E 的卡片。若其現值 > 總需補繳現金，恭喜您，您可以隨時質押保單 E 來填補缺口，安全下莊。
                     </li>
-                    <li><strong>問題二：如果是 2008 級別 (-50%) 呢？</strong><br>
-                        拉到 <strong>-50%</strong>，紅框變多代表壓力開始放大。<br>
-                        此時你可以把所有紅框的「需補繳金額」加總，當成需要準備的「<strong>股災專用緊急預備金</strong>」。<br>
-                        若你目前的：<br>
-                        <code>現金存量 +（保單 E 解約金或可借出金額） ≥ 紅框總額</code><br>
-                        代表：就算 2008 重演，你也只是「很不舒服」，但不會被市場強制平倉。
+                    <li><strong>第二步：ETF 交叉擔保。</strong> 
+                        若 ETF 維持率仍高 (例如 > 300%)，可向券商增加借款，將資金轉去償還保單的本金。
                     </li>
-                    <li><strong>問題三：極端的 2000 網路泡沫級別 (-67%)，你的極限在哪？</strong><br>
-                        滑到最右側 <strong>-67%</strong> 時，整張圖就是在模擬「極端黑天鵝」。<br>
-                        這時候，紅框總額 = 你在最慘情境下，需要從：<br>
-                        <ul>
-                            <li>保守資產（例如保單 E）</li>
-                            <li>手上現金</li>
-                            <li>未動用的信貸額度 / 股票質押可再借額度</li>
-                        </ul>
-                        中調度出來的「救命籌碼」。<br>
-                        如果你發現：就算在 -67%，你仍然有足夠的 <strong>「預備金 + 可動用資金」＞ 紅框總額</strong>，那代表你的整體結構其實非常有抗壓性。
+                    <li><strong>第三步：暫停再投資。</strong> 
+                        停止將配息買入新單位，保留現金流。
                     </li>
                 </ol>
-            </div>
-
-            <!-- 你最在意的重點說明 -->
-            <div class="info-block">
-                <h3>你最在意的一件事：會不會一跌就被追繳、被迫斷頭？</h3>
-                <div class="focus-box">
-                    <p><strong>這套工具不是在預測你能賺多少，而是在回答：</strong><br>
-                    「<strong>股災來的時候，我會不會被追繳？會不會被迫賣在最低點？</strong>」</p>
-                </div>
-
-                <h4>① 資產跌多少不是關鍵，真正可怕的是「被追繳」</h4>
-                <p>就算資產帳面跌了 30%、40%、50%，只要你沒有被追繳、沒有被迫賣出，你就還在遊戲裡，可以靠配息慢慢熬過去。</p>
-                <p>在這個精算器裡：</p>
-                <ul class="info-list">
-                    <li>綠燈卡片：代表<strong>沒有追繳壓力</strong>，只是帳面縮水。</li>
-                    <li>黃燈卡片：代表<strong>進入補繳區</strong>，但你仍可主動選擇要不要補、補多少。</li>
-                    <li>紅燈卡片：代表<strong>已觸及斷頭線</strong>，如果不處理，有機會被公司或券商強制動作。</li>
-                </ul>
-
-                <h4>② 紅框補繳金額＝你在這個情境下，真的需要掏出來的錢</h4>
-                <p>每一張卡片的紅框，代表在目前滑桿位置下：</p>
-                <ul class="info-list">
-                    <li>保單：借款比超過 80% / 90%，需要補繳多少本金，才會回到安全區。</li>
-                    <li>ETF：維持率低於 130%，要補多少保證金，才能回到券商要求的 166%。</li>
-                </ul>
-                <p>這些金額不是「感覺」，而是<strong>計算出來的最低補繳金額</strong>，就是你在那個股災情境下，<strong>真的要從口袋裡拿出來的錢</strong>。</p>
-
-                <h4>③ 是否會被追繳，看的是「紅框總額 vs 你的可動用資金」</h4>
-                <p>你真正要看的只有一件事：</p>
-                <div style="background:#f9f9f9; padding:10px; border-radius:6px; font-family:monospace; font-size:0.95em;">
-                    若「所有紅框補繳金額加總」 ≤ 「你能動用的現金＋保守資產＋額度」<br>
-                    ➜ 你就不會被追繳、不會被迫斷頭。
-                </div>
-                <p>你目前大約有：</p>
-                <ul class="info-list">
-                    <li>現金存量（約 40～50 萬）。</li>
-                    <li>保單 E（遠雄儲蓄型保單）的現金價值或可貸額度。</li>
-                    <li>ETF 尚可再借出的質押額度。</li>
-                    <li>循環信貸仍可動用的額度。</li>
-                </ul>
-                <p>粗略加總，你的「股災緊急預備金」大約在 <strong>130～150 萬區間</strong> 左右（實際數字可以依現況微調）。</p>
-                <p><strong>只要滑到 -30%、-40%、-50% 時，所有紅框補繳金額加起來沒有超過這個數字，就代表：</strong></p>
-                <ul class="info-list">
-                    <li>你會很不舒服（帳面虧損變大），但<strong>不會被市場趕出場</strong>。</li>
-                    <li>你還是可以靠每月配息＋薪水，慢慢還債、慢慢等市場恢復。</li>
-                    <li>這些槓桿只是「加速工具」，而不是隨時會引爆的炸彈。</li>
-                </ul>
-
-                <h4>④ 這套精算器的真正用途</h4>
-                <p>所以，每次你在玩這個滑桿時，其實是在問自己：</p>
-                <ul class="info-list">
-                    <li>「如果明天真的再來一次 2008，我能不能穩穩地補繳完，然後繼續活著？」</li>
-                    <li>「如果答案是『可以，而且補繳金額還在我預備金範圍內』，那我現在的槓桿就是我可以接受的。」</li>
-                </ul>
-                <p style="font-size:0.9em; color:#666">
-                    這樣，你看待市場大跌，就會從「完了完了我要破產了」<br>
-                    變成「好，這個情境下我大概要拿出多少萬就能穩住，其他交給時間跟配息處理」。<br>
-                    這就是你真正想要的安全感。
-                </p>
-            </div>
-
-            <div class="info-block">
-                <h3>如何解讀「可抗跌幅」與未來調整方向</h3>
-                <ul class="info-list">
-                    <li><strong>1️⃣ 若在 -40% 以內都沒有紅框：</strong><br>
-                        表示你的槓桿控制在相對穩健區間，<strong>可以承受一次 2008 等級的跌幅</strong>，而不需要被迫賣出資產。這時候的調整重點，可以放在「慢慢還一些保單借款、拉高安全邊際」。</li>
-                    <li><strong>2️⃣ 若在 -30% 左右就大量出現紅框：</strong><br>
-                        代表你的結構偏積極，只要景氣出現一次較大的修正，就可能被要求補繳。<br>
-                        這種狀況下，可以優先考慮：
-                        <ul>
-                            <li>從配息中撥一部分，用來降低借款比（例如把 55% 拉回 45%）。</li>
-                            <li>適度減少高波動標的比重，增加債券或儲蓄型保單的占比。</li>
-                        </ul>
-                    </li>
-                    <li><strong>3️⃣ 把這個工具當成「調槓桿前的模擬器」：</strong><br>
-                        每次你要增加借款、或打算多做一點槓桿時，可以先：
-                        <ol>
-                            <li>在上方卡片把新借款金額輸入進去。</li>
-                            <li>把滑桿拉到 -30%、-40%、-50%。</li>
-                            <li>確認紅框的總補繳金額，看看自己<span style="text-decoration: underline;">真的有能力在股災發生時掏得出來</span>。</li>
-                        </ol>
-                        如果在最糟情境中，你仍然拿得出那些錢，那這筆槓桿就是「相對可控」的；反之，就要謹慎。
-                    </li>
-                </ul>
-                <p style="font-size:0.9em; color:#666">
-                    心態上，可以把這個系統想成你專屬的「壓力測試儀表板」：<br>
-                    平常專心過生活、寫文章、拍照、陪家人，<br>
-                    偶爾打開這個頁面滑一滑，確認一下——目前這樣的槓桿水準，<strong>在最壞情況下你也不會被市場趕出場</strong>，就夠了。
-                </p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function switchTab(tabId, btnEl) {
+    function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        btnEl.classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
     const initialAssets = [
@@ -379,7 +301,6 @@
                     <span class="val-sim" id="sim-val-${item.id}">-- 萬</span>
                 </div>
                 
-                <!-- 補繳警示框 -->
                 <div id="alert-${item.id}" class="alert-box">
                     ⚠️ <span id="alert-msg-${item.id}">需補繳本金</span>
                     <span id="alert-amount-${item.id}" class="alert-amount">0 萬</span>
@@ -399,50 +320,51 @@
         document.getElementById('marketDropDisplay').innerText = `-${marketDropPct}%`;
         updateScenarioText(marketDropPct);
 
+        let totalAssetsSim = 0;
+        let totalLoanSum = 0;
+        let totalCashNeeded = 0;
+
         initialAssets.forEach(item => {
             const inputVal = parseFloat(document.getElementById(`input-val-${item.id}`).value) || 0;
             const inputLoan = parseFloat(document.getElementById(`input-loan-${item.id}`).value) || 0;
 
-            // Beta: 積極型保單 0.75, ETF 0.55, 其他 0
+            // Beta 設定: 積極型 0.75, ETF 0.55
             let beta = (item.type === 1) ? 0.75 : (item.type === 3) ? 0.55 : 0;
             const assetDropPct = marketDropPct * beta;
             const simulatedVal = inputVal * (1 - (assetDropPct / 100));
 
+            // 加總數據
+            totalAssetsSim += simulatedVal;
+            totalLoanSum += inputLoan;
+
             let riskMetric = 0; let status = 'safe'; let statusText = '安全'; let color = 'var(--success)'; let barWidth = 0;
-            let cashNeeded = 0; // 需補繳金額
+            let cashNeeded = 0;
 
             if (item.type === 1 || item.type === 2) {
-                // 保單邏輯
                 if (simulatedVal > 0) riskMetric = (inputLoan / simulatedVal) * 100; else riskMetric = 999;
                 
                 if (riskMetric >= item.limit2) { status = 'danger'; statusText = '斷頭'; color = 'var(--danger)'; }
                 else if (riskMetric >= item.limit1) { status = 'warn'; statusText = '需補繳'; color = 'var(--warning)'; }
 
-                // 計算補繳：目標降回 limit1 (通常是 80%)
                 if (riskMetric >= item.limit1) {
-                    const targetLoan = simulatedVal * (item.limit1 / 100);
-                    cashNeeded = inputLoan - targetLoan;
+                    cashNeeded = inputLoan - (simulatedVal * (item.limit1 / 100));
                 }
-
                 barWidth = Math.min(riskMetric, 100);
                 document.getElementById(`risk-text-${item.id}`).innerText = `借款比: ${riskMetric.toFixed(1)}%`;
 
             } else {
-                // ETF 邏輯
                 if (inputLoan > 0) riskMetric = (simulatedVal / inputLoan) * 100; else riskMetric = 999;
-
                 if (riskMetric <= item.limit2) { status = 'danger'; statusText = '斷頭'; color = 'var(--danger)'; }
                 else if (riskMetric <= item.limit1) { status = 'warn'; statusText = '追繳'; color = 'var(--warning)'; }
 
-                // 計算補繳：SOP 是要補回 166%
                 if (riskMetric <= item.limit1) {
-                    const targetLoan = simulatedVal / 1.66;
-                    cashNeeded = inputLoan - targetLoan;
+                    cashNeeded = inputLoan - (simulatedVal / 1.66);
                 }
-
                 barWidth = Math.min((riskMetric / 300) * 100, 100);
                 document.getElementById(`risk-text-${item.id}`).innerText = `維持率: ${riskMetric.toFixed(0)}%`;
             }
+
+            if(cashNeeded > 0) totalCashNeeded += cashNeeded;
 
             // 更新 UI
             document.getElementById(`sim-val-${item.id}`).innerText = `${simulatedVal.toFixed(1)} 萬`;
@@ -454,16 +376,29 @@
             document.getElementById(`bar-${item.id}`).style.background = color;
             document.getElementById(`card-${item.id}`).className = `card ${status}`;
 
-            // 顯示補繳金額
             const alertBox = document.getElementById(`alert-${item.id}`);
             if (cashNeeded > 0) {
                 alertBox.style.display = 'block';
-                document.getElementById(`alert-msg-${item.id}`).innerText = isNaN(cashNeeded) ? "錯誤" : (item.type===3 ? "需補回維持率166%" : "需降至借款比80%");
+                document.getElementById(`alert-msg-${item.id}`).innerText = item.type===3 ? "需補回維持率166%" : "需降至借款比80%";
                 document.getElementById(`alert-amount-${item.id}`).innerText = `${Math.ceil(cashNeeded)} 萬`;
             } else {
                 alertBox.style.display = 'none';
             }
         });
+
+        // 更新頂部總覽
+        document.getElementById('total-assets').innerText = `${Math.round(totalAssetsSim)} 萬`;
+        document.getElementById('total-loan').innerText = `${Math.round(totalLoanSum)} 萬`;
+        document.getElementById('total-net').innerText = `${Math.round(totalAssetsSim - totalLoanSum)} 萬`;
+        
+        const totalCashEl = document.getElementById('total-cash-needed');
+        if (totalCashNeeded > 0) {
+            totalCashEl.innerText = `${Math.ceil(totalCashNeeded)} 萬`;
+            totalCashEl.style.color = 'var(--danger)';
+        } else {
+            totalCashEl.innerText = "0";
+            totalCashEl.style.color = 'var(--success)';
+        }
     }
 
     function updateScenarioText(pct) {
@@ -474,18 +409,18 @@
 
         if(pct === 0) {
             title.innerHTML = "🟢 狀態：平穩 (編輯模式)";
-            desc.innerHTML = "積極型保單在多頭表現佳。請嘗試拉動滑桿，測試極端風險。";
+            desc.innerHTML = "所有數值為即時計算。請拉動滑桿，查看上方「總需補繳現金」是否為 0。";
         } else if(pct < 35) {
             title.innerHTML = "🟡 模擬情境：2020 / 2022 (-30%)";
-            desc.innerHTML = "資產縮水但尚在可控範圍，注意高槓桿項目是否出現補繳提示。";
+            desc.innerHTML = "積極型保單縮水，但因槓桿控制得宜，系統性風險仍低。";
             title.style.color = "#e67e22";
         } else if(pct < 60) {
             title.innerHTML = "🟠 模擬情境：2008 金融海嘯 (-50%)";
-            desc.innerHTML = "積極型保單壓力增大，請準備現金或動用儲蓄險。";
+            desc.innerHTML = "壓力區。請檢查上方紅色數字，這代表您需要準備的緊急預備金。";
             title.style.color = "var(--danger)";
         } else {
             title.innerHTML = "⚫ 模擬情境：2000 網路泡沫 (-67%)";
-            desc.innerHTML = "極限測試！請查看下方紅框，這就是您在最壞情況下需要的救命錢。";
+            desc.innerHTML = "極限測試。此時若保單 E 的價值大於「總需補繳現金」，您就安全了。";
             box.className = "scenario-box black-swan";
         }
     }
