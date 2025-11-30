@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>資產壓力測試戰情室 (V11 旗艦版)</title>
+    <title>資產壓力測試戰情室 (V13 完整資訊版)</title>
     <style>
         :root {
             --bg-color: #f0f3f5;
@@ -19,7 +19,7 @@
         body { font-family: "Microsoft JhengHei", "Segoe UI", sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; line-height: 1.6; }
         .container { max-width: 1200px; margin: 0 auto; }
 
-        /* --- 頂部總覽儀表板 (新功能) --- */
+        /* --- 頂部總覽儀表板 --- */
         .summary-dashboard {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;
             background: #fff; padding: 20px; border-radius: var(--border-radius);
@@ -135,7 +135,7 @@
 
 <div class="container">
     
-    <!-- 1. 新增：總覽儀表板 -->
+    <!-- 總覽儀表板 -->
     <div class="summary-dashboard">
         <div class="summary-item">
             <div class="summary-label">總資產 (模擬)</div>
@@ -155,11 +155,11 @@
         </div>
     </div>
 
-    <!-- 2. 控制區 -->
+    <!-- 控制區 -->
     <div class="dashboard-panel">
         <div class="header-row">
             <div>
-                <h2>🎛️ 資產壓力測試戰情室</h2>
+                <h2>🎛️ 資產壓力測試戰情室 (V13)</h2>
                 <p>配置：積極型保單 (安聯/施羅德) + ETF 質押組合</p>
             </div>
             <div class="market-metrics">
@@ -185,70 +185,70 @@
         </div>
     </div>
 
-    <!-- 3. 卡片區 -->
+    <!-- 卡片區 -->
     <div class="grid" id="cardGrid"></div>
 
-    <!-- 4. 詳細說明區 (已加回) -->
+    <!-- 詳細說明區 (已補回基金細節) -->
     <div class="info-section">
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('tab1')">⚠️ 積極型風險分析</button>
+            <button class="tab-btn active" onclick="switchTab('tab1')">⚠️ 積極型基金解析</button>
             <button class="tab-btn" onclick="switchTab('tab2')">🛡️ 安全指標定義</button>
             <button class="tab-btn" onclick="switchTab('tab3')">🚨 應急 SOP</button>
         </div>
 
-        <!-- Tab 1 -->
         <div id="tab1" class="tab-content active">
             <div class="info-grid">
                 <div class="info-block">
-                    <h3>為什麼積極型保單風險較高？</h3>
-                    <p>您的保單成分含有 <span class="highlight">安聯收益成長</span> 與 <span class="highlight">施羅德環球</span>：</p>
+                    <h3>為什麼您的保單屬於「積極型」？</h3>
+                    <p>您持有的 <span class="highlight">安聯收益成長</span> 與 <span class="highlight">施羅德環球</span>，結構與傳統股債平衡不同：</p>
                     <ul class="info-list">
-                        <li><strong>Beta 值修正 (0.75)：</strong> 這類基金持有 1/3 高收益債與 1/3 可轉債，與股市連動性高。大盤跌 10%，保單約跌 7.5%。</li>
-                        <li><strong>歷史教訓：</strong> 在 2000 年與 2008 年，這類資產的跌幅遠高於傳統公債。請務必滑到 -67% 查看紅燈情況。</li>
+                        <li><strong>成分結構 (33/33/33)：</strong> 通常由 1/3 美國股票 + 1/3 可轉債 + 1/3 高收益債 (垃圾債) 組成。</li>
+                        <li><strong>風險特性：</strong>
+                            <ul>
+                                <li><strong>高收益債：</strong> 在市場恐慌時，它會像股票一樣下跌，無法提供「公債」般的避險功能。</li>
+                                <li><strong>可轉債：</strong> 具有股權性質，股災時跌幅亦深。</li>
+                            </ul>
+                        </li>
+                        <li><strong>Beta 值設定 (0.75)：</strong> 因此，我們將此模擬器的抗跌係數設為 0.75 (大盤跌 10%，保單跌 7.5%)，這比一般平衡型 (Beta 0.6) 更保守、更貼近真實風險。</li>
                     </ul>
                 </div>
                 <div class="info-block">
-                    <h3>您的護城河</h3>
+                    <h3>為什麼「安聯主力」門檻較嚴？</h3>
+                    <p>保單 D 的借款成數被限制在 <strong>6成 (補繳) / 7成 (斷頭)</strong>，這正是因為銀行端也認定該標的波動較大。</p>
                     <ul class="info-list">
-                        <li><strong>ETF 組合 (5:4:1)：</strong> 含有 40% 投資等級債，這是您資產中最堅固的盾牌。</li>
-                        <li><strong>持有時間：</strong> 卡片上顯示的持有時間 (如 1年2個月) 累積了配息，降低了您的帳面成本。</li>
+                        <li><strong>潛在風險：</strong> 在 2000 年與 2008 年股災中，這類積極型資產的跌幅曾一度接近股市大盤。</li>
+                        <li><strong>您的優勢：</strong> 好消息是，雖然門檻變嚴，但您在保單 D 的實際借款成數僅 <strong>27.4%</strong>，因此擁有極厚的安全氣囊，即便門檻提高，依然處於安全區。</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Tab 2 -->
         <div id="tab2" class="tab-content">
             <div class="info-grid">
                 <div class="info-block">
-                    <h3>保單補繳規則 (LTV)</h3>
-                    <p>當借款比 (LTV) > 80% 時需補繳。</p>
-                    <p><strong>公式：</strong> <span style="font-family:monospace">補繳 = 借款 - (市值 × 80%)</span></p>
-                    <p>本系統會自動計算需償還多少本金才能回到綠燈。</p>
+                    <h3>一般保單 (A, B, C)</h3>
+                    <p>補繳線：80% | 斷頭線：90%</p>
+                    <p class="highlight">公式：補繳 = 借款 - (市值 × 80%)</p>
                 </div>
                 <div class="info-block">
-                    <h3>ETF 補繳規則 (維持率)</h3>
-                    <p>維持率 < 130% 追繳。通常需補至 166% 解除。</p>
-                    <p><strong>公式：</strong> <span style="font-family:monospace">補繳 = 借款 - (市值 ÷ 166%)</span></p>
-                    <p>ETF 質押因槓桿低 (約 20%)，通常極難發生追繳。</p>
+                    <h3>保單 D (安聯主力)</h3>
+                    <p>補繳線：<span style="color:var(--danger)">60%</span> | 斷頭線：<span style="color:var(--danger)">70%</span></p>
+                    <p class="highlight">公式：補繳 = 借款 - (市值 × 60%)</p>
+                    <p style="font-size:0.9em; color:#666">門檻較低，代表需要更早準備保證金。</p>
                 </div>
             </div>
         </div>
 
-        <!-- Tab 3 -->
         <div id="tab3" class="tab-content">
             <div class="info-block">
                 <h3>🚦 極端行情應變 SOP</h3>
                 <p>若上方儀表板的「總需補繳現金」出現數字：</p>
                 <ol>
                     <li><strong>第一步：檢查「保單 E (遠雄)」的現值。</strong> 
-                        請看保單 E 的卡片。若其現值 > 總需補繳現金，恭喜您，您可以隨時質押保單 E 來填補缺口，安全下莊。
+                        若其現值 > 總需補繳現金，恭喜您，您可以隨時質押保單 E 來填補缺口。
                     </li>
                     <li><strong>第二步：ETF 交叉擔保。</strong> 
-                        若 ETF 維持率仍高 (例如 > 300%)，可向券商增加借款，將資金轉去償還保單的本金。
-                    </li>
-                    <li><strong>第三步：暫停再投資。</strong> 
-                        停止將配息買入新單位，保留現金流。
+                        若 ETF 維持率仍高，可向券商增加借款，將資金轉去償還保單的本金。
                     </li>
                 </ol>
             </div>
@@ -264,11 +264,12 @@
         event.currentTarget.classList.add('active');
     }
 
+    // 資產資料 (已更新 保單D 的 limit1=60, limit2=70)
     const initialAssets = [
         { id: 'A', name: '保單 A (法巴年金)', type: 1, val: 47.7, loan: 21.5, limit1: 80, limit2: 90, duration: '1年 2個月' },
         { id: 'B', name: '保單 B (法巴壽險)', type: 1, val: 147.8, loan: 68.5, limit1: 80, limit2: 90, duration: '1年 1個月' },
         { id: 'C', name: '保單 C (安達年金)', type: 1, val: 180, loan: 84, limit1: 80, limit2: 90, duration: '2個月' },
-        { id: 'D', name: '保單 D (安聯主力)', type: 1, val: 328, loan: 90, limit1: 80, limit2: 90, duration: '4個月' },
+        { id: 'D', name: '保單 D (安聯主力)', type: 1, val: 328, loan: 90, limit1: 60, limit2: 70, duration: '4個月' }, // 修正為 60/70
         { id: 'E', name: '保單 E (遠雄人壽)', type: 2, val: 15, loan: 8, limit1: 95, limit2: 100, duration: '儲蓄型' },
         { id: 'ETF', name: '台股 ETF 組合', type: 3, val: 171, loan: 34.5, limit1: 130, limit2: 115, duration: '質押' }
     ];
@@ -279,6 +280,11 @@
         initialAssets.forEach(item => {
             const isETF = item.type === 3;
             const riskLabel = isETF ? '維持率' : '借款比';
+            
+            // 針對保單 D 顯示不同的安全提示
+            let safeText = isETF ? '安全 > 130%' : '安全 < 80%';
+            if(item.id === 'D') safeText = '安全 < 60%';
+
             const html = `
             <div class="card safe" id="card-${item.id}">
                 <div class="card-header">
@@ -307,7 +313,7 @@
                 </div>
 
                 <div class="bar-container"><div class="bar-fill" id="bar-${item.id}" style="width: 50%; background: var(--success);"></div></div>
-                <div class="bar-info"><span id="risk-text-${item.id}">${riskLabel}: --%</span><span>${isETF ? '安全 > 130%' : '安全 < 80%'}</span></div>
+                <div class="bar-info"><span id="risk-text-${item.id}">${riskLabel}: --%</span><span>${safeText}</span></div>
             </div>`;
             grid.innerHTML += html;
         });
@@ -333,7 +339,6 @@
             const assetDropPct = marketDropPct * beta;
             const simulatedVal = inputVal * (1 - (assetDropPct / 100));
 
-            // 加總數據
             totalAssetsSim += simulatedVal;
             totalLoanSum += inputLoan;
 
@@ -341,11 +346,13 @@
             let cashNeeded = 0;
 
             if (item.type === 1 || item.type === 2) {
+                // 保單邏輯 (LTV)
                 if (simulatedVal > 0) riskMetric = (inputLoan / simulatedVal) * 100; else riskMetric = 999;
                 
                 if (riskMetric >= item.limit2) { status = 'danger'; statusText = '斷頭'; color = 'var(--danger)'; }
                 else if (riskMetric >= item.limit1) { status = 'warn'; statusText = '需補繳'; color = 'var(--warning)'; }
 
+                // 計算補繳: 目標降回 limit1
                 if (riskMetric >= item.limit1) {
                     cashNeeded = inputLoan - (simulatedVal * (item.limit1 / 100));
                 }
@@ -353,6 +360,7 @@
                 document.getElementById(`risk-text-${item.id}`).innerText = `借款比: ${riskMetric.toFixed(1)}%`;
 
             } else {
+                // ETF 邏輯 (維持率)
                 if (inputLoan > 0) riskMetric = (simulatedVal / inputLoan) * 100; else riskMetric = 999;
                 if (riskMetric <= item.limit2) { status = 'danger'; statusText = '斷頭'; color = 'var(--danger)'; }
                 else if (riskMetric <= item.limit1) { status = 'warn'; statusText = '追繳'; color = 'var(--warning)'; }
@@ -379,7 +387,7 @@
             const alertBox = document.getElementById(`alert-${item.id}`);
             if (cashNeeded > 0) {
                 alertBox.style.display = 'block';
-                document.getElementById(`alert-msg-${item.id}`).innerText = item.type===3 ? "需補回維持率166%" : "需降至借款比80%";
+                document.getElementById(`alert-msg-${item.id}`).innerText = item.type===3 ? "需補回維持率166%" : `需降至借款比${item.limit1}%`;
                 document.getElementById(`alert-amount-${item.id}`).innerText = `${Math.ceil(cashNeeded)} 萬`;
             } else {
                 alertBox.style.display = 'none';
@@ -409,7 +417,7 @@
 
         if(pct === 0) {
             title.innerHTML = "🟢 狀態：平穩 (編輯模式)";
-            desc.innerHTML = "所有數值為即時計算。請拉動滑桿，查看上方「總需補繳現金」是否為 0。";
+            desc.innerHTML = "所有數值為即時計算。積極型保單在平時配息佳，但波動風險較高。";
         } else if(pct < 35) {
             title.innerHTML = "🟡 模擬情境：2020 / 2022 (-30%)";
             desc.innerHTML = "積極型保單縮水，但因槓桿控制得宜，系統性風險仍低。";
